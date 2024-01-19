@@ -18,7 +18,7 @@ async def hello(interaction):
 
 @client.event
 async def on_ready():
-    await tree.sync_all_commands()
+    await tree.sync()
     print(f'We have logged in as {client.user}')
 
 @client.event
