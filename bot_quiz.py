@@ -75,9 +75,41 @@ async def on_message(message):
                     description=f"Commandes disponibles :\n"
                                         f"**!boucle** : Active/désactive le mode boucle\n"
                                         f"**!help** : Affiche l'aide\n"
-                                        f"**!ff** : Abandonne la question et arrête la boucle\n",
+                                        f"**!ff** : Abandonne la question et arrête la boucle\n"
+                                        f"**!hint** : Donne un indice\n",
                     color=discord.Color.purple())
         await message.channel.send(embed=embed)
+
+    elif message.content.startswith("!hint"):
+        """
+        format de la commande : !hint 0
+        si le nombre est 0, affiche le nom masqué de la capitale, en révélant la première lettre pas déjà révélée
+        sinon, révele une lettre aléatoire de la capitale dans le nom masqué
+        """
+        await message.delete()
+        if question_type == "capitale":
+            if message.content.startswith("!hint 0"):
+                for i in range(len(_capitale)):
+                    if nom_masque[2*i] == "_":
+                        nom_masque = nom_masque[:2*i] + _capitale[i] + nom_masque[2*i+1:]
+                        break
+            else:
+                for i in range(len(_capitale)):
+                    if nom_masque[2*i] == "_":
+                        nom_masque = nom_masque[:2*i] + _capitale[i] + nom_masque[2*i+1:]
+                        break
+            embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?\n\n{nom_masque}", color=discord.Color.green())
+            await message.channel.send(embed=embed)
+
+    elif message.content.startswith("!boucle"):
+        """
+        format de la commande : !boucle
+        -> change la valeur de la variable boucle (True ou False)
+        """
+        await message.delete()
+        boucle = not boucle
+        await client.change_presence(activity=discord.activity.CustomActivity(f'boucle = {boucle}'))
+
     elif question_type == "capitale" and channel == message.channel:
             if simp(message.content) == simp(_capitale):
                 await message.channel.send(embed=discord.Embed(title=f"__**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: {message.author.display_name} a trouvé la bonne réponse !", color=discord.Color.green()))
@@ -211,34 +243,7 @@ async def on_message(message):
         bot_latency = round(client.latency*1000)
         embed = discord.Embed(title=":ping_pong: Pong !",description=f"Latence du bot : {bot_latency}ms", color=discord.Color.red())
         await message.channel.send(embed = embed)
-    elif message.content.startswith("!boucle"):
-        """
-        format de la commande : !boucle
-        -> change la valeur de la variable boucle (True ou False)
-        """
-        await message.delete()
-        boucle = not boucle
-        await client.change_presence(activity=discord.activity.CustomActivity(f'boucle = {boucle}'))
-    elif message.content.startswith("!hint"):
-        """
-        format de la commande : !hint 0
-        si le nombre est 0, affiche le nom masqué de la capitale, en révélant la première lettre pas déjà révélée
-        sinon, révele une lettre aléatoire de la capitale dans le nom masqué
-        """
-        await message.delete()
-        if question_type == "capitale":
-            if message.content.startswith("!hint 0"):
-                for i in range(len(_capitale)):
-                    if nom_masque[2*i] == "_":
-                        nom_masque = nom_masque[:2*i] + _capitale[i] + nom_masque[2*i+1:]
-                        break
-            else:
-                for i in range(len(_capitale)):
-                    if nom_masque[2*i] == "_":
-                        nom_masque = nom_masque[:2*i] + _capitale[i] + nom_masque[2*i+1:]
-                        break
-            embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?\n\n{nom_masque}", color=discord.Color.green())
-            await message.channel.send(embed=embed)
+
 
 # On récupère notre token discord dans l'env de Railway
 bot_token = os.environ.get("DISCORD_BOT_TOKEN")
