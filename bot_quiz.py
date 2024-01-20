@@ -57,6 +57,44 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
 
 @client.event
+async def on_reaction_add(reaction, user):
+    global question_type,_capitale,_difficulte,_pays,_code2,_article,condition,boucle,channel
+    if reaction.emoji == "🔍" and reaction.count == 2 and question_type=="capitale":
+        await reaction.message.channel.send(embed=discord.Embed(title=f"__**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: La bonne réponse était : **{_capitale}**", color=discord.Color.blue()))
+        await reaction.message.clear_reactions()
+        question_type = ""
+        if boucle == True:
+            question_type = "capitale"
+            await reaction.message.channel.send("Chargement de la prochaine question...\n‎")
+            time.sleep(1)
+            #relance la commande !capitale automatiquement
+            row = connexion_db(f"select * from pays{condition} ORDER BY RANDOM()")
+            _pays = row[0]
+            _capitale = row[6]
+            for i in range(len(_capitale)):
+                if i == 0:
+                    nom_masque = _capitale[i]
+                else:
+                    nom_masque += "_ "
+            _code2 = row[2].lower()
+            if row[4]=="le": _article = "du "
+            elif row[4]=="la": _article = "de la "
+            elif row[4]=="les": _article = "des "
+            elif row[4]=="l'": _article = "de l'"
+            else: 
+                if _pays[0] in "aeiouy":
+                    _article = "d'"
+                else:
+                    _article = "de "
+            if row[7]==1: _difficulte = "facile"
+            elif row[7]==2: _difficulte = "moyen"
+            elif row[7]==3: _difficulte = "difficile"
+            elif row[7]==4: _difficulte = "impossible"
+            embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?", color=discord.Color.pink())
+            new_msg = await reaction.message.channel.send(embed=embed)
+            await new_msg.add_reaction("🔍")
+
+@client.event
 async def on_message(message):
     global question_type,_capitale,_difficulte,_pays,_code2,_article,condition,boucle,channel
     if message.author == client.user:
@@ -126,8 +164,10 @@ async def on_message(message):
                     elif row[7]==2: _difficulte = "moyen"
                     elif row[7]==3: _difficulte = "difficile"
                     elif row[7]==4: _difficulte = "impossible"
-                    embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?", color=discord.Color.green())
+                    embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?", color=discord.Color.pink())
                     await message.channel.send(embed=embed)
+                    new_msg = await message.channel.send(embed=embed)
+                    await new_msg.add_reaction("🔍")
 
             elif message.content == "!ff" or message.content == "!pass" or message.content == "!exit":
                 await message.channel.send(embed=discord.Embed(title=f"__**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: La bonne réponse était : **{_capitale}**", color=discord.Color.red()))
@@ -220,8 +260,9 @@ async def on_message(message):
 
         await message.delete()
         await message.channel.send("‎\n‎")
-        embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?", color=discord.Color.green())
-        await message.channel.send(embed=embed)
+        embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?", color=discord.Color.pink())
+        new_msg = await message.channel.send(embed=embed)
+        await new_msg.add_reaction("🔍")
     elif message.content.startswith("!ping"):
         """
         format de la commande : !ping
@@ -235,7 +276,7 @@ async def on_message(message):
 
 # On récupère notre token discord dans l'env de Railway
 bot_token = os.environ.get("DISCORD_BOT_TOKEN")
-
+bot_token = "MTE5Nzk4MzQwMjM5NDEyNDMxOA.GLRbd4.Fl3gzubR51OBzxKe8WYUcnP-DOL93Aj0sJyxFc"
 
 # Pour lancer le bot
 client.run(bot_token)
