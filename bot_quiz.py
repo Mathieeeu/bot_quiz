@@ -60,6 +60,6 @@ async def on_message(message):
 
 # On récupère notre token discord dans l'env de Railway
 bot_token = os.environ.get("DISCORD_BOT_TOKEN")
-bot_token = "MTE5Nzk4MzQwMjM5NDEyNDMxOA.GWJzzg.QTPZzhHbJY_Fhpj65ySH80JVYFuCFtCvWvT-NE"
+
 # Pour lancer le bot
 client.run(bot_token)
