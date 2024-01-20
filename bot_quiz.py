@@ -12,6 +12,7 @@ condition = ""
 question_type = ""
 boucle = False
 channel = None
+nom_masque = ""
 
 def connexion_db(sqlite_select_Query):
     try :
@@ -57,7 +58,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    global question_type,_capitale,_difficulte,_pays,_code2,_article,condition,boucle,channel
+    global question_type,_capitale,_difficulte,_pays,_code2,_article,condition,boucle,channel,nom_masque
     if message.author == client.user:
         return
     elif message.content.startswith("!help"):
@@ -90,6 +91,11 @@ async def on_message(message):
                     row = connexion_db(f"select * from pays{condition} ORDER BY RANDOM()")
                     _pays = row[0]
                     _capitale = row[6]
+                    for i in range(len(_capitale)):
+                        if i == 0:
+                            nom_masque = _capitale[i]
+                        else:
+                            nom_masque += "_ "
                     _code2 = row[2].lower()
                     if row[4]=="le": _article = "du "
                     elif row[4]=="la": _article = "de la "
@@ -175,6 +181,11 @@ async def on_message(message):
 
         _pays = row[0]
         _capitale = row[6]
+        for i in range(len(_capitale)):
+            if i == 0:
+                nom_masque = _capitale[i]
+            else:
+                nom_masque += "_ "
         _code2 = row[2].lower()
         if row[4]=="le": _article = "du "
         elif row[4]=="la": _article = "de la "
@@ -208,7 +219,26 @@ async def on_message(message):
         await message.delete()
         boucle = not boucle
         await client.change_presence(activity=discord.activity.CustomActivity(f'boucle = {boucle}'))
-
+    elif message.content.startswith("!hint"):
+        """
+        format de la commande : !hint 0
+        si le nombre est 0, affiche le nom masqué de la capitale, en révélant la première lettre pas déjà révélée
+        sinon, révele une lettre aléatoire de la capitale dans le nom masqué
+        """
+        await message.delete()
+        if question_type == "capitale":
+            if message.content.startswith("!hint 0"):
+                for i in range(len(_capitale)):
+                    if nom_masque[2*i] == "_":
+                        nom_masque = nom_masque[:2*i] + _capitale[i] + nom_masque[2*i+1:]
+                        break
+            else:
+                for i in range(len(_capitale)):
+                    if nom_masque[2*i] == "_":
+                        nom_masque = nom_masque[:2*i] + _capitale[i] + nom_masque[2*i+1:]
+                        break
+            embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?\n\n{nom_masque}", color=discord.Color.green())
+            await message.channel.send(embed=embed)
 
 # On récupère notre token discord dans l'env de Railway
 bot_token = os.environ.get("DISCORD_BOT_TOKEN")
