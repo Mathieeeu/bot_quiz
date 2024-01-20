@@ -87,8 +87,7 @@ async def on_message(message):
         """
         await message.delete()
         if question_type == "capitale":
-            embed = discord.Embed(title=f":classical_building: __**Capitale**__ ({_difficulte})",description=f":flag_{_code2}: Quelle est la capitale {_article}**{_pays.capitalize()}** ?\n\n{_capitale[random.randint(0,len(_capitale))]}", color=discord.Color.green())
-            await message.channel.send(embed=embed)
+            await message.channel.send(f"lettre aléatoire : {random.choice(_capitale)}")
 
     elif message.content.startswith("!boucle"):
         """
